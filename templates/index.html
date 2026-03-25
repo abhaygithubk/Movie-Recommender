@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineMatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--red:#e63946;--dark:#0a0a0f;--card:#13131a;--card2:#1a1a24;--border:rgba(255,255,255,0.07);--text:#dddde8;--muted:#5a5a6e;--yellow:#ffd166;--green:#7dda58;--orange:#ff9f43}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 36px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.96);backdrop-filter:blur(12px)}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:#fff}
+.nav-logo span{color:var(--red)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.search-wrap{position:relative}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 14px}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;width:200px}
+.search-box input::placeholder{color:var(--muted)}
+.user-badge{padding:7px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:14px}
+.logout-btn{padding:7px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:none;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+main{padding:36px;max-width:1400px;margin:0 auto}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.tag{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:100px;font-weight:500}
+.tag-collab{background:rgba(230,57,70,0.15);color:var(--red);border:1px solid rgba(230,57,70,0.25)}
+.tag-content{background:rgba(255,209,102,0.12);color:var(--yellow);border:1px solid rgba(255,209,102,0.2)}
+.tag-latest{background:rgba(125,218,88,0.12);color:var(--green);border:1px solid rgba(125,218,88,0.2)}
+.tag-bollywood{background:rgba(255,159,67,0.15);color:var(--orange);border:1px solid rgba(255,159,67,0.25)}
+.movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin-bottom:48px}
+.movie-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:transform .2s,border-color .2s;cursor:pointer;position:relative}
+.movie-card:hover{transform:translateY(-5px);border-color:rgba(255,255,255,0.18)}
+.movie-poster{width:100%;aspect-ratio:2/3;background:var(--card2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.movie-poster img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.movie-card:hover .movie-poster img{transform:scale(1.04)}
+.poster-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;flex-direction:column;gap:8px;background:linear-gradient(135deg,#1a1a2e,#16213e);color:rgba(255,255,255,0.3);font-size:12px;text-align:center;padding:10px}
+.poster-fallback .icon{font-size:30px}
+.movie-info{padding:10px}
+.movie-title{font-size:12px;font-weight:500;line-height:1.4;margin-bottom:5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.movie-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted)}
+.rating{display:flex;align-items:center;gap:3px;color:var(--yellow)}
+.star-rate{display:flex;gap:2px;margin-top:8px}
+.star{font-size:15px;cursor:pointer;color:var(--muted);transition:color .1s,transform .1s;line-height:1}
+.star:hover,.star.active{color:var(--yellow);transform:scale(1.2)}
+.rated-badge{display:inline-block;font-size:10px;padding:2px 7px;background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.2);color:var(--yellow);border-radius:100px;margin-top:6px}
+.new-badge{position:absolute;top:8px;right:8px;z-index:2;background:var(--red);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px}
+.bwood-badge{position:absolute;top:8px;left:8px;z-index:2;background:var(--orange);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.modal-title{font-size:20px;font-weight:500;color:#fff}
+.modal-year{font-size:13px;color:var(--muted);margin-top:3px}
+.close-btn{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;transition:color .2s}
+.close-btn:hover{color:#fff}
+.modal-genre{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.genre-pill{font-size:11px;padding:3px 9px;background:rgba(255,255,255,0.06);border-radius:100px;color:var(--text)}
+.modal-section{margin-bottom:20px}
+.modal-section h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.rec-list{display:flex;flex-direction:column;gap:7px}
+.rec-item{display:flex;align-items:center;gap:12px;padding:9px 12px;background:var(--card2);border-radius:8px;cursor:pointer;transition:background .2s}
+.rec-item:hover{background:rgba(255,255,255,0.06)}
+.rec-poster{width:36px;height:52px;border-radius:4px;object-fit:cover;background:var(--dark);flex-shrink:0}
+.rec-info{flex:1;min-width:0}
+.rec-item-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-item-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.search-results{display:none;position:absolute;top:100%;right:0;background:var(--card);border:1px solid var(--border);border-radius:10px;width:280px;max-height:280px;overflow-y:auto;z-index:200;margin-top:6px}
+.search-results.open{display:block}
+.search-result-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;transition:background .15s}
+.search-result-item:hover{background:var(--card2)}
+.search-result-item:last-child{border-bottom:none}
+.s-poster{width:28px;height:40px;border-radius:3px;object-fit:cover;background:var(--card2);flex-shrink:0}
+.toast{position:fixed;bottom:24px;right:24px;z-index:300;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13px;grid-column:1/-1}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">CINE<span>MATCH</span></div>
+  <div class="nav-right">
+    <div class="search-wrap">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Search movies..." autocomplete="off">
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <div class="user-badge">👤 {{ user }}</div>
+    <a href="/logout" class="logout-btn">Logout</a>
+  </div>
+</nav>
+
+<main>
+
+{# MACRO for movie card #}
+{% macro movie_card(movie, badge='', badge_class='') %}
+<div class="movie-card" onclick="openModal('{{ movie.title|replace("'","\\'") }}', {{ movie.movie_id }})">
+  {% if badge %}<div class="{{ badge_class }}">{{ badge }}</div>{% endif %}
+  <div class="movie-poster">
+    {% if movie.poster %}
+      <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+    {% else %}
+      <div class="poster-fallback"><span class="icon">🎬</span><span>{{ movie.title[:14] }}</span></div>
+    {% endif %}
+  </div>
+  <div class="movie-info">
+    <div class="movie-title">{{ movie.title }}</div>
+    <div class="movie-meta"><span>{{ movie.year }}</span><span class="rating">⭐ {{ movie.rating }}</span></div>
+    <div class="star-rate" data-id="{{ movie.movie_id }}">
+      {% for i in range(1,6) %}
+      <span class="star {% if user_ratings.get(movie.movie_id|string)|int >= i %}active{% endif %}"
+            onclick="rateMovie(event, {{ movie.movie_id }}, {{ i }})">★</span>
+      {% endfor %}
+    </div>
+    {% if user_ratings.get(movie.movie_id|string) %}<div class="rated-badge">Rated {{ user_ratings.get(movie.movie_id|string) }}/5</div>{% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+<!-- FOR YOU -->
+<div class="section-title">FOR YOU <span class="tag tag-collab">Collaborative Filtering</span></div>
+<div class="movies-grid">
+  {% if collab_recs %}
+    {% for movie in collab_recs %}{{ movie_card(movie) }}{% endfor %}
+  {% else %}
+    <div class="empty-state">Rate some movies below to get personalized recommendations!</div>
+  {% endif %}
+</div>
+
+<!-- LATEST 2022-2024 -->
+<div class="section-title">LATEST MOVIES <span class="tag tag-latest">2022 – 2024</span></div>
+<div class="movies-grid">
+  {% for movie in latest %}{{ movie_card(movie, 'NEW', 'new-badge') }}{% endfor %}
+</div>
+
+<!-- BOLLYWOOD -->
+<div class="section-title">BOLLYWOOD <span class="tag tag-bollywood">Hindi Films</span></div>
+<div class="movies-grid">
+  {% for movie in bollywood %}{{ movie_card(movie, 'B', 'bwood-badge') }}{% endfor %}
+</div>
+
+<!-- ALL MOVIES -->
+<div class="section-title">ALL MOVIES <span class="tag tag-content">Rate to Improve Recs</span></div>
+<div class="movies-grid">
+  {% for movie in movies %}{{ movie_card(movie) }}{% endfor %}
+</div>
+
+</main>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modalTitle">—</div><div class="modal-year" id="modalYear"></div></div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-genre" id="modalGenres"></div>
+    <div class="modal-section">
+      <h3>Similar Movies <span style="color:var(--red)">• Content-Based Filtering</span></h3>
+      <div class="rec-list" id="recList"><div style="color:var(--muted);font-size:13px">Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+async function openModal(title, movieId) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('recList').innerHTML = '<div style="color:var(--muted);font-size:13px">Finding similar movies...</div>';
+  document.getElementById('modalGenres').innerHTML = '';
+  try {
+    const res = await fetch('/recommend', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title})});
+    const data = await res.json();
+    const recs = data.recommendations;
+    if (!recs.length) { document.getElementById('recList').innerHTML = '<div style="color:var(--muted);font-size:13px">No recommendations found.</div>'; return; }
+    document.getElementById('modalGenres').innerHTML = (recs[0]?.genres||'').split(' ').map(g=>`<span class="genre-pill">${g}</span>`).join('');
+    document.getElementById('recList').innerHTML = recs.map(r=>`
+      <div class="rec-item" onclick="openModal('${r.title.replace(/'/g,"\\'")}',${r.movie_id})">
+        ${r.poster?`<img class="rec-poster" src="${r.poster}" alt="">`:'<div class="rec-poster" style="background:var(--card);display:flex;align-items:center;justify-content:center">🎬</div>'}
+        <div class="rec-info"><div class="rec-item-title">${r.title}</div><div class="rec-item-meta">${r.year} · ⭐ ${r.rating}</div></div>
+      </div>`).join('');
+  } catch(e) { document.getElementById('recList').innerHTML = '<div style="color:var(--red);font-size:13px">Error.</div>'; }
+}
+function closeModal(e) { if (!e||e.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.remove('open'); }
+async function rateMovie(e, movieId, rating) {
+  e.stopPropagation();
+  await fetch('/rate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movie_id:movieId,rating})});
+  document.querySelectorAll(`.star-rate[data-id="${movieId}"] .star`).forEach((s,i)=>s.classList.toggle('active',i<rating));
+  showToast(`Rated ${rating}/5 ⭐ — Refresh for updated recs!`);
+}
+let st;
+document.getElementById('searchInput').addEventListener('input',function(){
+  clearTimeout(st);
+  const q=this.value.trim();
+  if(!q){document.getElementById('searchResults').classList.remove('open');return;}
+  st=setTimeout(async()=>{
+    const res=await fetch(`/search?q=${encodeURIComponent(q)}`);
+    const data=await res.json();
+    const el=document.getElementById('searchResults');
+    el.innerHTML=data.results.length?data.results.map(m=>`
+      <div class="search-result-item" onclick="openModal('${m.title.replace(/'/g,"\\'")}',${m.movie_id})">
+        ${m.poster?`<img class="s-poster" src="${m.poster}" alt="">`:'<div class="s-poster" style="background:var(--card2);display:flex;align-items:center;justify-content:center">🎬</div>'}
+        <div><strong>${m.title}</strong><br><span style="color:var(--muted);font-size:11px">${m.year}</span></div>
+      </div>`).join(''):'<div class="search-result-item" style="color:var(--muted)">No results</div>';
+    el.classList.add('open');
+  },300);
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))document.getElementById('searchResults').classList.remove('open');});
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+</script>
+</body>
+</html>
